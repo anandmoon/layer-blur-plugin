@@ -1,1 +1,0 @@
-# layer-blur-plugin

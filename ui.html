@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>BlurLab</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    .container {
+      padding: 14px;
+    }
+
+    h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .row {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      margin-bottom: 6px;
+      opacity: 0.8;
+    }
+
+    select, input[type="range"], button {
+      width: 100%;
+      padding: 7px;
+      border-radius: 6px;
+      border: none;
+      background: #222;
+      color: #fff;
+      font-size: 12px;
+    }
+
+    button {
+      cursor: pointer;
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .mode {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mode button {
+      flex: 1;
+      background: #222;
+      color: #fff;
+      border: 1px solid #333;
+    }
+
+    .mode button.active {
+      background: #fff;
+      color: #000;
+    }
+
+    .colors {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    input[type="color"] {
+      height: 34px;
+      border-radius: 6px;
+      border: none;
+      padding: 0;
+    }
+
+    .slider-value {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    .footer {
+      margin-top: 12px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <h3>BlurLab</h3>
+
+  <!-- Preset -->
+  <div class="row">
+    <label>Preset Style</label>
+    <select id="preset">
+      <option value="aurora">Aurora</option>
+      <option value="neon">Neon</option>
+      <option value="pastel">Pastel</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+
+  <!-- Color Count -->
+  <div class="row">
+    <label>Number of Colors</label>
+    <select id="colorCount">
+      <option value="2">2</option>
+      <option value="3" selected>3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+  </div>
+
+  <!-- Mode -->
+  <div class="row">
+    <label>Color Mode</label>
+    <div class="mode">
+      <button id="randomBtn" class="active">Random</button>
+      <button id="manualBtn">Manual</button>
+    </div>
+  </div>
+
+  <!-- Color Picker -->
+  <div class="row" id="colorPanel" style="display:none;">
+    <label>Pick Colors</label>
+    <div class="colors" id="colorPickers"></div>
+  </div>
+
+  <!-- Blur -->
+  <div class="row">
+    <label>Blur Intensity</label>
+    <input id="blurSlider" type="range" min="60" max="300" value="160">
+    <div class="slider-value" id="blurValue">160px</div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="row">
+    <label>Canvas Size</label>
+    <select id="canvasSize">
+      <option value="600">600 × 600</option>
+      <option value="800" selected>800 × 800</option>
+      <option value="1000">1000 × 1000</option>
+      <option value="1200">1200 × 1200</option>
+    </select>
+  </div>
+
+  <!-- Density -->
+  <div class="row">
+    <label>Shape Density</label>
+    <input id="densitySlider" type="range" min="1" max="3" value="1" step="1">
+    <div class="slider-value" id="densityValue">Normal</div>
+  </div>
+
+  <div class="footer">
+    <button id="generateBtn">Generate Composition</button>
+  </div>
+</div>
+
+<script>
+  const colorCountSelect = document.getElementById("colorCount");
+  const randomBtn = document.getElementById("randomBtn");
+  const manualBtn = document.getElementById("manualBtn");
+  const colorPanel = document.getElementById("colorPanel");
+  const colorPickers = document.getElementById("colorPickers");
+  const generateBtn = document.getElementById("generateBtn");
+  const blurSlider = document.getElementById("blurSlider");
+  const blurValue = document.getElementById("blurValue");
+  const canvasSize = document.getElementById("canvasSize");
+  const densitySlider = document.getElementById("densitySlider");
+  const densityValue = document.getElementById("densityValue");
+  const preset = document.getElementById("preset");
+
+  let mode = "random";
+
+  function randomHex() {
+    return "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0");
+  }
+
+  function renderColorPickers() {
+    const count = Number(colorCountSelect.value);
+    colorPickers.innerHTML = "";
+
+    for (let i = 0; i < count; i++) {
+      const input = document.createElement("input");
+      input.type = "color";
+      input.value = randomHex();
+      colorPickers.appendChild(input);
+    }
+  }
+
+  randomBtn.onclick = () => {
+    mode = "random";
+    randomBtn.classList.add("active");
+    manualBtn.classList.remove("active");
+    colorPanel.style.display = "none";
+  };
+
+  manualBtn.onclick = () => {
+    mode = "manual";
+    manualBtn.classList.add("active");
+    randomBtn.classList.remove("active");
+    colorPanel.style.display = "block";
+    renderColorPickers();
+  };
+
+  colorCountSelect.onchange = () => {
+    if (mode === "manual") renderColorPickers();
+  };
+
+  blurSlider.oninput = () => {
+    blurValue.innerText = `${blurSlider.value}px`;
+  };
+
+  densitySlider.oninput = () => {
+    densityValue.innerText =
+      densitySlider.value == 1 ? "Normal" :
+      densitySlider.value == 2 ? "Dense" :
+      "Very Dense";
+  };
+
+  generateBtn.onclick = () => {
+  const count = Number(colorCountSelect.value);
+  const colors = mode === "manual"
+    ? [...colorPickers.querySelectorAll("input")].map(i => i.value)
+    : [];
+
+  parent.postMessage({
+    pluginMessage: {
+      type: "GENERATE",
+      seed: Math.random(),   // ✅ force new randomness every click
+      count,
+      mode,
+      colors,
+      blur: Number(blurSlider.value),
+      canvas: Number(canvasSize.value),
+      density: Number(densitySlider.value),
+      preset: preset.value
+    }
+  }, "*");
+};
+
+</script>
+</body>
+</html>
